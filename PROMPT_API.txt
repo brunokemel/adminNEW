@@ -1,0 +1,138 @@
+REQUIREMENTS - API ENDPOINTS PARA DASHBOARD ADMIN
+
+O frontend precisa dos seguintes endpoints com essas estruturas exatas:
+
+=== AUTENTICAÇÃO ===
+
+1. POST /admin/auth/login
+   Entrada: { "password": "string" }
+   Resposta: { "authenticated": true, "expiresAt": "2024-01-15T10:30:00Z" }
+
+2. GET /admin/auth/session
+   Sem parâmetros
+   Resposta: { "authenticated": true, "expiresAt": "2024-01-15T10:30:00Z" }
+
+3. POST /admin/auth/logout
+   Sem parâmetros
+   Resposta: { "success": true }
+
+=== DASHBOARD ===
+
+4. GET /admin/dashboard/resumo?nomeEvento=EVENTO&dataInicio=2024-01-01&dataFim=2024-01-31
+   Resposta:
+   {
+     "atualizadoEm": "2024-01-15T10:30:00Z",
+     "resumo": {
+       "inscricoesAprovadas": 250,
+       "pedidosPendentes": 15,
+       "pedidosRejeitados": 5,
+       "pedidosCancelados": 3,
+       "valorArrecadado": 50000,
+       "valorInscricoes": 48000,
+       "valorTaxas": 2000,
+       "ticketMedio": 200,
+       "vagasRestantes": 100
+     },
+     "lotes": [
+       {
+         "nomeEvento": "Meia Maratona 2024",
+         "distancia": "21km",
+         "lote": "1",
+         "capacidade": 500,
+         "vendidos": 250,
+         "pendentes": 15,
+         "vagasRestantes": 235,
+         "percentualVendido": 50,
+         "valorArrecadado": 50000,
+         "valorInscricoes": 48000,
+         "valorTaxas": 2000,
+         "precos": [200]
+       }
+     ]
+   }
+
+=== EVENTOS ===
+
+5. GET /admin/dashboard/eventos
+   Sem parâmetros
+   Resposta:
+   [
+     {
+       "nomeEvento": "Meia Maratona 2024",
+       "lotes": [
+         {
+           "id": "abc123",
+           "nomeEvento": "Meia Maratona 2024",
+           "distancia": "21km",
+           "lote": "1",
+           "capacidade": 500,
+           "ativo": true,
+           "grupoCapacidade": null,
+           "precos": [200]
+         }
+       ]
+     }
+   ]
+
+=== REEMBOLSOS ===
+
+6. GET /reembolsos/solicitacoes?status=PENDENTE
+   Resposta:
+   [
+     {
+       "id": "123",
+       "nome": "João Silva",
+       "email": "joao@email.com",
+       "nomeEvento": "Meia Maratona 2024",
+       "lote": "1",
+       "motivo": "Lesão",
+       "status": "PENDENTE",
+       "criadoEm": "2024-01-15T10:30:00Z"
+     }
+   ]
+
+=== CRIAR NOVO LOTE ===
+
+7. POST /admin/eventos/lotes
+   Entrada:
+   {
+     "nomeEvento": "Meia Maratona 2024",
+     "distancia": "21km",
+     "lote": "2",
+     "capacidade": 300,
+     "grupoCapacidade": null,
+     "precos": [250],
+     "ativo": true
+   }
+   Resposta: { "success": true, "message": "Lote criado com sucesso" }
+
+=== RELATÓRIOS (PDF) ===
+
+8. GET /relatorio/{eventName}/pdf
+   Retorna arquivo PDF do relatório do evento
+
+9. GET /relatorio/{eventName}/lote/{lot}/pdf
+   Retorna arquivo PDF do relatório do lote específico
+
+=== HEADERS NECESSÁRIOS ===
+
+Todos os requests devem aceitar:
+- Authorization (se necessário)
+- Content-Type: application/json
+- X-Admin-Client: 1kmzinho-dashboard
+- Accept: application/json (ou application/pdf para PDFs)
+
+=== CREDENCIAIS ===
+
+- Qual é a senha para login?
+- Como deve ser a validação? (tempo de expiração, refresh token, etc)
+- Usa cookies automáticos ou precisa enviar token em header?
+
+=== DÚVIDAS ===
+
+Por favor confirme:
+1. Todos os endpoints estão prontos?
+2. Os nomes dos campos estão exatamente assim?
+3. Há filtros adicionais não mencionados?
+4. Como é feita a autenticação exatamente?
+5. Há algum erro específico que a API está retornando?

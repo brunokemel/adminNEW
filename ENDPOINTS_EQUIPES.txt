@@ -1,0 +1,73 @@
+SUPORTE A EQUIPES - ENDPOINTS DA API NECESSÁRIOS
+
+Para que o frontend tenha suporte completo a equipes, os seguintes endpoints precisam ser implementados:
+
+=== 1. GET /admin/inscricoes ===
+Parâmetros de query:
+- nomeEvento: string (obrigatório)
+- dataInicio: string YYYY-MM-DD (obrigatório)
+- dataFim: string YYYY-MM-DD (obrigatório)
+- equipe: string (opcional, filtrar por nome da equipe)
+
+Resposta:
+{
+  "total": 150,
+  "inscricoes": [
+    {
+      "id": "123",
+      "nome": "João Silva",
+      "email": "joao@email.com",
+      "nomeEvento": "Meia Maratona 2024",
+      "lote": "Kit Completo",
+      "equipe": "Corredores do Vale",
+      "status": "APROVADO",
+      "criadoEm": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+
+Notas:
+- Campo "equipe" pode ser null/vazio se não houver equipe (inscrição individual)
+- Status pode ser: APROVADO, PENDENTE, REJEITADO, CANCELADO
+- O total deve refletir o total geral, não apenas a página
+- Implementar paginação se houver muitos registros
+
+=== 2. GET /admin/eventos/{eventName}/equipas ===
+Parâmetro:
+- eventName: string (URL encoded)
+
+Resposta:
+{
+  "totalEquipas": 12,
+  "totalParticipantesEmEquipas": 95,
+  "equipas": [
+    {
+      "nome": "Corredores do Vale",
+      "participantes": 15,
+      "lotes": ["Kit Completo", "Kit Simples"]
+    }
+  ]
+}
+
+Notas:
+- Equipas devem estar ordenadas por maior número de participantes
+- Incluir "Sem equipe" como uma entrada se houver inscritos individuais
+- totalParticipantesEmEquipas não deve incluir inscritos sem equipe
+- lotes é um array de nomes dos lotes/kits que essa equipe participa
+
+=== FILTROS E PESQUISA ===
+
+O frontend permite:
+1. Pesquisa por nome ou email do participante
+2. Filtro por equipe
+3. Filtro por período (dataInicio/dataFim)
+4. Filtro por evento
+
+Todos compatíveis com os query params acima.
+
+=== OBSERVAÇÕES ===
+
+1. Enquanto o endpoint GET /admin/inscricoes não estiver pronto, o frontend mostrará "Sem dados de equipes"
+2. Quando estiver pronto, o frontend automaticamente carregará e exibirá os dados
+3. Os campos de resposta precisam ser exatos conforme especificado (sensibilidade a maiúsculas/minúsculas pode afetar)
+4. A API já retorna o campo "equipe" no PDF de relatórios, agora precisa em JSON
