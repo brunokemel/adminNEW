@@ -53,8 +53,12 @@ export function agruparLotesPorCapacidade(lotes: DashboardLotMetrics[]): GrupoLo
     const valorInscricoesTotal = lotesDoGrupo.reduce((sum, l) => sum + l.valorInscricoes, 0)
     const valorTaxasTotal = lotesDoGrupo.reduce((sum, l) => sum + l.valorTaxas, 0)
 
-    // Vagas restantes: usar do primeiro lote (já deduplicado pela API)
-    const vagasRestantes = primeiroLote.vagasRestantes
+    // Vagas restantes: calcular como capacidadeTotal - (vendidos + pendentes)
+    // Para lotes compartilhados, NÃO usar vagasRestantes individual pois ele é duplicado
+    // Para lotes individuais, usar do lote (já deduplicado)
+    const vagasRestantes = isCompartilhado
+      ? Math.max(0, capacidadeTotal - vendidosTotais - pendentesTotais)
+      : primeiroLote.vagasRestantes
 
     const percentualVendido = capacidadeTotal > 0 ? Math.round((vendidosTotais / capacidadeTotal) * 100) : 0
 

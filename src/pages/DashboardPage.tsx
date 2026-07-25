@@ -69,7 +69,10 @@ export function DashboardPage() {
 
   const totalRemaining =
     summaryQuery.data?.resumo.vagasRestantes ??
-    summaryQuery.data?.lotes.reduce((total, item) => total + item.vagasRestantes, 0) ??
+    agruparLotesPorCapacidade(summaryQuery.data?.lotes ?? []).reduce(
+      (total, grupo) => total + grupo.vagasRestantes,
+      0,
+    ) ??
     0
 
   function handlePeriodChange(nextPeriod: PeriodPreset) {
@@ -298,6 +301,7 @@ export function DashboardPage() {
                 {/* Tabela com todos os lotes */}
                 <LotesTable
                   lotes={data.lotes}
+                  grupos={agruparLotesPorCapacidade(data.lotes)}
                   onDownload={handleDownloadLot}
                   isDownloading={summaryQuery.isFetching}
                 />

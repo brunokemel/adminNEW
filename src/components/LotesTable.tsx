@@ -2,14 +2,45 @@ import { Download, Info } from 'lucide-react'
 import type { DashboardLotMetrics } from '../types/dashboard'
 import { formatCurrency, formatInteger } from '../utils/formatters'
 import { OccupancyBar } from './OccupancyBar'
+import type { GrupoLotes } from '../utils/loteGrouping'
 
 interface LotesTableProps {
   lotes: DashboardLotMetrics[]
+  grupos?: GrupoLotes[]
   onDownload: (eventName: string, lot: string) => void
   isDownloading?: boolean
 }
 
-export function LotesTable({ lotes, onDownload, isDownloading = false }: LotesTableProps) {
+export function LotesTable({ lotes, grupos = [], onDownload, isDownloading = false }: LotesTableProps) {
+  // Criar mapa para busca rápida de grupos compartilhados
+  const gruposCompartilhadosMap = new Map<string, GrupoLotes>()
+  grupos.forEach((grupo) => {
+    if (grupo.isCompartilhado && grupo.grupoId) {
+      gruposCompartilhadosMap.set(grupo.grupoId, grupo)
+    }
+  })
+
+  // Função para obter vagas restantes corretas
+  const getVagasRestantes = (lote: DashboardLotMetrics): number => {
+    if (lote.grupoCapacidade?.id) {
+      const grupo = gruposCompartilhadosMap.get(lote.grupoCapacidade.id)
+      if (grupo) {
+        return grupo.vagasRestantes
+      }
+    }
+    return lote.vagasRestantes
+  }
+
+  // Função para obter percentual de ocupação correto
+  const getPercentualOcupacao = (lote: DashboardLotMetrics): number => {
+    if (lote.grupoCapacidade?.id) {
+      const grupo = gruposCompartilhadosMap.get(lote.grupoCapacidade.id)
+      if (grupo) {
+        return grupo.percentualVendido
+      }
+    }
+    return lote.percentualVendido
+  }
   return (
     <div className="table-wrap">
       <table>
@@ -69,12 +100,12 @@ export function LotesTable({ lotes, onDownload, isDownloading = false }: LotesTa
                 </div>
               </td>
               <td data-label="Restantes">
-                <span className={item.vagasRestantes <= 10 ? 'badge badge--warning' : 'badge'}>
-                  {formatInteger(item.vagasRestantes)}
+                <span className={getVagasRestantes(item) <= 10 ? 'badge badge--warning' : 'badge'}>
+                  {formatInteger(getVagasRestantes(item))}
                 </span>
               </td>
               <td data-label="Ocupação">
-                <OccupancyBar value={item.percentualVendido} />
+                <OccupancyBar value={getPercentualOcupacao(item)} />
               </td>
               <td data-label="Arrecadação">
                 <strong>{formatCurrency(item.valorArrecadado)}</strong>
