@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Download, FileText, Users } from 'lucide-react'
+import { Download, FileSpreadsheet, FileText, Search, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { adminApi } from '../api/admin'
 import { useInscricoes } from '../hooks/useInscricoes'
@@ -14,6 +14,9 @@ interface EventPreviewProps {
 
 export function EventPreview({ filters, onDownload }: EventPreviewProps) {
   const [tab, setTab] = useState<'participants' | 'pdf'>('participants')
+  const [participantSearch, setParticipantSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [downloadError, setDownloadError] = useState('')
   const registrationsQuery = useInscricoes(filters, Boolean(filters.nomeEvento))
   const pdfQuery = useQuery({
     queryKey: ['event-report-preview', filters.nomeEvento],
@@ -25,10 +28,38 @@ export function EventPreview({ filters, onDownload }: EventPreviewProps) {
     () => pdfQuery.data ? URL.createObjectURL(pdfQuery.data) : '',
     [pdfQuery.data],
   )
+  const participantQuery = useQuery({
+    queryKey: ['report-participant-search', filters.nomeEvento, debouncedSearch],
+    queryFn: () => adminApi.searchReportParticipants(filters.nomeEvento, debouncedSearch),
+    enabled: Boolean(filters.nomeEvento) && debouncedSearch.length >= 2,
+  })
 
   useEffect(() => () => {
     if (pdfUrl) URL.revokeObjectURL(pdfUrl)
   }, [pdfUrl])
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedSearch(participantSearch.trim()), 350)
+    return () => window.clearTimeout(timeout)
+  }, [participantSearch])
+
+  async function downloadExcel() {
+    setDownloadError('')
+    try {
+      await adminApi.downloadEventExcel(filters.nomeEvento)
+    } catch (error) {
+      setDownloadError(error instanceof Error ? error.message : 'Falha ao baixar Excel.')
+    }
+  }
+
+  async function downloadIndividual(id: string, name: string) {
+    setDownloadError('')
+    try {
+      await adminApi.downloadParticipantReport(filters.nomeEvento, id, name)
+    } catch (error) {
+      setDownloadError(error instanceof Error ? error.message : 'Falha ao baixar PDF individual.')
+    }
+  }
 
   if (!filters.nomeEvento) return null
   const registrations = registrationsQuery.data ?? []
@@ -41,9 +72,50 @@ export function EventPreview({ filters, onDownload }: EventPreviewProps) {
           <h2>Prévia de {filters.nomeEvento}</h2>
           <p>Confira os dados antes de baixar ou imprimir o relatório.</p>
         </div>
-        <button className="button button--secondary" type="button" onClick={onDownload}>
-          <Download size={17} /> Baixar PDF
-        </button>
+        <div className="event-preview__actions">
+          <button className="button button--secondary" type="button" onClick={() => void downloadExcel()}>
+            <FileSpreadsheet size={17} /> Baixar Excel
+          </button>
+          <button className="button button--secondary" type="button" onClick={onDownload}>
+            <Download size={17} /> Baixar PDF
+          </button>
+        </div>
+      </div>
+
+      {downloadError && <p className="inline-alert" role="alert">{downloadError}</p>}
+
+      <div className="individual-report">
+        <div>
+          <h3>PDF individual do kit</h3>
+          <p>Pesquise pelo nome ou CPF. O CPF diferencia participantes com nomes iguais.</p>
+        </div>
+        <div className="input-with-search individual-report__search">
+          <Search size={18} />
+          <input
+            aria-label="Pesquisar participante por nome ou CPF"
+            placeholder="Nome ou CPF do participante"
+            value={participantSearch}
+            onChange={(event) => setParticipantSearch(event.target.value)}
+          />
+        </div>
+        {debouncedSearch.length >= 2 && (
+          <div className="individual-report__results">
+            {participantQuery.isLoading ? <p>Pesquisando...</p>
+              : participantQuery.isError ? <p>Não foi possível pesquisar participantes.</p>
+                : participantQuery.data?.participantes.length === 0 ? <p>Nenhum participante aprovado encontrado.</p>
+                  : participantQuery.data?.participantes.map((participant) => (
+                    <div className="individual-report__item" key={participant.id}>
+                      <div>
+                        <strong>{participant.nome}</strong>
+                        <span>CPF {participant.cpf} · {participant.lote}{participant.numeroInscricao ? ` · Nº ${participant.numeroInscricao}` : ''}</span>
+                      </div>
+                      <button className="button button--secondary" type="button" onClick={() => void downloadIndividual(participant.id, participant.nome)}>
+                        <Download size={16} /> PDF do kit
+                      </button>
+                    </div>
+                  ))}
+          </div>
+        )}
       </div>
 
       <div className="preview-tabs" role="tablist" aria-label="Prévia do relatório">

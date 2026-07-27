@@ -90,6 +90,14 @@ export interface InscricoesResponse {
   inscricoes: Inscricao[]
 }
 
+export interface ReportParticipant {
+  id: string
+  nome: string
+  cpf: string
+  lote: string
+  numeroInscricao?: number | null
+}
+
 export interface ResumoEquipe {
   nome: string
   participantes: number

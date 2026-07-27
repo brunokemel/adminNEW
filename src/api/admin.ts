@@ -6,6 +6,7 @@ import type {
   InscricoesResponse,
   NewEventLotPayload,
   RefundRequest,
+  ReportParticipant,
   SessionResponse,
 } from '../types/dashboard'
 import { apiFetch, downloadProtectedFile, getProtectedFile } from './http'
@@ -62,6 +63,25 @@ export const adminApi = {
     ),
 
   getEventReport: (eventName: string) => getProtectedFile(reportPath(eventName)),
+
+  downloadEventExcel: (eventName: string) =>
+    downloadProtectedFile(
+      `/admin/relatorios/${encodeURIComponent(eventName)}/excel`,
+      `participantes-${eventName.toLowerCase().replace(/[^a-z0-9]+/gi, '-')}.xls`,
+    ),
+
+  searchReportParticipants: (eventName: string, busca: string) =>
+    apiFetch<{ participantes: ReportParticipant[] }>(
+      `/admin/relatorios/${encodeURIComponent(eventName)}/participantes`,
+      {},
+      { busca },
+    ),
+
+  downloadParticipantReport: (eventName: string, participantId: string, participantName: string) =>
+    downloadProtectedFile(
+      `/admin/relatorios/${encodeURIComponent(eventName)}/participantes/${encodeURIComponent(participantId)}/pdf`,
+      `kit-${participantName.toLowerCase().replace(/[^a-z0-9]+/gi, '-')}.pdf`,
+    ),
 
   downloadLotReport: (eventName: string, lot: string) =>
     downloadProtectedFile(
