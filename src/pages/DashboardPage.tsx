@@ -18,6 +18,7 @@ import { DashboardSkeleton, EmptyState, ErrorState } from '../components/States'
 import { LotesTable } from '../components/LotesTable'
 import { KitsSummary } from '../components/KitsSummary'
 import { MetricCard } from '../components/MetricCard'
+import { EventPreview } from '../components/EventPreview'
 import { SharedCapacityCard } from '../components/SharedCapacityCard'
 import type { DashboardFilters, PeriodPreset } from '../types/dashboard'
 import { getDateRange } from '../utils/dates'
@@ -30,8 +31,8 @@ interface OutletContext {
 
 export function DashboardPage() {
   const { setHeaderContext } = useOutletContext<OutletContext>()
-  const initialRange = getDateRange('today')
-  const [period, setPeriod] = useState<PeriodPreset>('today')
+  const initialRange = getDateRange('month')
+  const [period, setPeriod] = useState<PeriodPreset>('month')
   const [selectedEvent, setSelectedEvent] = useState('')
   const [draftFilters, setDraftFilters] = useState<DashboardFilters>({
     nomeEvento: '',
@@ -264,6 +265,8 @@ export function DashboardPage() {
               icon={CalendarDays}
             />
           </section>
+
+          <EventPreview filters={appliedFilters} onDownload={() => void handleDownloadEvent()} />
 
           <section className="panel">
             <div className="panel__header">

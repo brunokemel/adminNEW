@@ -8,7 +8,19 @@ import type {
   RefundRequest,
   SessionResponse,
 } from '../types/dashboard'
-import { apiFetch, downloadProtectedFile } from './http'
+import { apiFetch, downloadProtectedFile, getProtectedFile } from './http'
+
+const unwrap = <T>(payload: unknown, keys: string[]): T => {
+  if (payload && typeof payload === 'object') {
+    for (const key of keys) {
+      if (key in payload) return (payload as Record<string, unknown>)[key] as T
+    }
+  }
+  return payload as T
+}
+
+const reportPath = (eventName: string) =>
+  `/relatorio/${encodeURIComponent(eventName)}/pdf`
 
 export const adminApi = {
   getSession: () => apiFetch<SessionResponse>('/admin/auth/session'),
@@ -25,10 +37,14 @@ export const adminApi = {
       body: JSON.stringify({}),
     }),
 
-  getEvents: () => apiFetch<AdminEvent[]>('/admin/dashboard/eventos'),
+  getEvents: async () =>
+    unwrap<AdminEvent[]>(await apiFetch<unknown>('/admin/dashboard/eventos'), ['eventos', 'data']),
 
-  getSummary: (filters: DashboardFilters) =>
-    apiFetch<DashboardResponse>('/admin/dashboard/resumo', {}, { ...filters }),
+  getSummary: async (filters: DashboardFilters) =>
+    unwrap<DashboardResponse>(
+      await apiFetch<unknown>('/admin/dashboard/resumo', {}, { ...filters }),
+      ['dashboard', 'data'],
+    ),
 
   getPendingRefunds: () =>
     apiFetch<RefundRequest[]>('/reembolsos/solicitacoes', {}, { status: 'PENDENTE' }),
@@ -41,9 +57,11 @@ export const adminApi = {
 
   downloadEventReport: (eventName: string) =>
     downloadProtectedFile(
-      `/relatorio/${encodeURIComponent(eventName)}/pdf`,
+      reportPath(eventName),
       `relatorio-${eventName.toLowerCase().replace(/[^a-z0-9]+/gi, '-')}.pdf`,
     ),
+
+  getEventReport: (eventName: string) => getProtectedFile(reportPath(eventName)),
 
   downloadLotReport: (eventName: string, lot: string) =>
     downloadProtectedFile(
@@ -53,8 +71,23 @@ export const adminApi = {
         .replace(/[^a-z0-9]+/gi, '-')}.pdf`,
     ),
 
-  getInscricoes: (filters: DashboardFilters) =>
-    apiFetch<InscricoesResponse>('/admin/inscricoes', {}, { ...filters }),
+  getInscricoes: async (filters: DashboardFilters) => {
+    const payload = await apiFetch<unknown>('/admin/inscricoes', {}, { ...filters })
+    if (Array.isArray(payload)) return { total: payload.length, inscricoes: payload } as InscricoesResponse
+    const response = unwrap<Record<string, unknown>>(payload, ['data'])
+    const rows = (response?.inscricoes ?? response?.pedidos ?? []) as Array<Record<string, unknown>>
+    const inscricoes = rows.map((item) => ({
+      ...item,
+      nome: item.nome ?? item.nomePessoa ?? '',
+      totalPago: item.totalPago ?? item.total ?? null,
+      statusComprovante: item.statusComprovante
+        ?? (item.comprovanteEnviadoEm ? 'Enviado' : 'Não enviado'),
+    }))
+    return {
+      total: Number(response?.total ?? inscricoes.length),
+      inscricoes,
+    } as InscricoesResponse
+  },
 
   getEventoEquipas: (nomeEvento: string) =>
     apiFetch<EventoEquipasResponse>(`/admin/eventos/${encodeURIComponent(nomeEvento)}/equipas`),

@@ -48,8 +48,8 @@ export async function apiFetch<T>(
 
   if (!response.ok) {
     const message =
-      typeof payload === 'object' && payload && 'message' in payload
-        ? String(payload.message)
+      typeof payload === 'object' && payload && ('message' in payload || 'erro' in payload)
+        ? String('message' in payload ? payload.message : payload.erro)
         : `Não foi possível concluir a solicitação (${response.status}).`
 
     throw new ApiError(message, response.status, payload)
@@ -58,10 +58,7 @@ export async function apiFetch<T>(
   return payload as T
 }
 
-export async function downloadProtectedFile(
-  path: string,
-  fileName: string,
-): Promise<void> {
+export async function getProtectedFile(path: string): Promise<Blob> {
   const response = await fetch(buildUrl(path), {
     credentials: 'include',
     headers: {
@@ -73,13 +70,20 @@ export async function downloadProtectedFile(
   if (!response.ok) {
     const payload = await response.json().catch(() => null)
     throw new ApiError(
-      payload?.message ?? 'Não foi possível baixar o relatório.',
+      payload?.message ?? payload?.erro ?? 'Não foi possível carregar o relatório.',
       response.status,
       payload,
     )
   }
 
-  const blob = await response.blob()
+  return response.blob()
+}
+
+export async function downloadProtectedFile(
+  path: string,
+  fileName: string,
+): Promise<void> {
+  const blob = await getProtectedFile(path)
   const objectUrl = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = objectUrl

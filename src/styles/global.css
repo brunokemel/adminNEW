@@ -1536,6 +1536,61 @@ tr.is-shared-capacity:hover {
   color: var(--gray-500);
 }
 
+.value-breakdown {
+  display: block;
+  margin-top: 4px;
+  color: var(--gray-500);
+  font-size: .7rem;
+  font-weight: 500;
+}
+
+.event-preview {
+  margin-bottom: 22px;
+}
+
+.event-preview__header p {
+  margin-bottom: 0;
+}
+
+.preview-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--gray-200);
+  padding: 0 20px;
+}
+
+.preview-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 13px 15px 11px;
+  background: transparent;
+  color: var(--gray-500);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.preview-tabs button.is-active {
+  border-bottom-color: var(--green-600);
+  color: var(--green-600);
+}
+
+.preview-state {
+  margin: 0;
+  padding: 30px 20px;
+}
+
+.pdf-preview-frame {
+  display: block;
+  width: 100%;
+  height: min(75vh, 850px);
+  min-height: 520px;
+  border: 0;
+  background: var(--gray-100);
+}
+
 /* === RESPONSIVE SHARED CAPACITY === */
 
 @media (max-width: 760px) {

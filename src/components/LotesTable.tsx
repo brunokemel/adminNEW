@@ -54,6 +54,7 @@ export function LotesTable({ lotes, grupos = [], onDownload, isDownloading = fal
             <th>Capacidade</th>
             <th>Restantes</th>
             <th>Ocupação</th>
+            <th>Vendido em inscrições</th>
             <th>Arrecadação</th>
             <th>
               <span className="sr-only">Ações</span>
@@ -107,8 +108,12 @@ export function LotesTable({ lotes, grupos = [], onDownload, isDownloading = fal
               <td data-label="Ocupação">
                 <OccupancyBar value={getPercentualOcupacao(item)} />
               </td>
+              <td data-label="Vendido em inscrições">
+                <strong>{formatCurrency(item.valorInscricoes)}</strong>
+              </td>
               <td data-label="Arrecadação">
                 <strong>{formatCurrency(item.valorArrecadado)}</strong>
+                <small className="value-breakdown">inclui {formatCurrency(item.valorTaxas)} em taxas</small>
               </td>
               <td data-label="Relatório">
                 <button

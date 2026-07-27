@@ -6,7 +6,7 @@ export function useInscricoes(filters: DashboardFilters, enabled = true) {
   return useQuery({
     queryKey: ['inscricoes', filters],
     queryFn: () => adminApi.getInscricoes(filters),
-    select: (response) => response.inscricoes ?? [],
+    select: (response) => response?.inscricoes ?? [],
     staleTime: 30_000,
     enabled,
   })
