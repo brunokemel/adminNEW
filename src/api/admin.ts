@@ -73,7 +73,15 @@ export const adminApi = {
 
   getInscricoes: async (filters: DashboardFilters) => {
     const payload = await apiFetch<unknown>('/admin/inscricoes', {}, { ...filters })
-    if (Array.isArray(payload)) return { total: payload.length, inscricoes: payload } as InscricoesResponse
+    if (Array.isArray(payload)) {
+      return {
+        pagina: 1,
+        limite: payload.length,
+        total: payload.length,
+        totalPaginas: 1,
+        inscricoes: payload,
+      } as InscricoesResponse
+    }
     const response = unwrap<Record<string, unknown>>(payload, ['data'])
     const rows = (response?.inscricoes ?? response?.pedidos ?? []) as Array<Record<string, unknown>>
     const inscricoes = rows.map((item) => ({
@@ -84,7 +92,10 @@ export const adminApi = {
         ?? (item.comprovanteEnviadoEm ? 'Enviado' : 'Não enviado'),
     }))
     return {
+      pagina: Number(response?.pagina ?? filters.pagina ?? 1),
+      limite: Number(response?.limite ?? filters.limite ?? 20),
       total: Number(response?.total ?? inscricoes.length),
+      totalPaginas: Number(response?.totalPaginas ?? 1),
       inscricoes,
     } as InscricoesResponse
   },

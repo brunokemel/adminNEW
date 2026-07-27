@@ -1810,6 +1810,25 @@ tr.is-shared-capacity:hover {
   font-weight: 750;
 }
 
+.field--limit {
+  min-width: 105px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-top: 1px solid var(--gray-100);
+  padding: 16px 20px;
+}
+
+.pagination span {
+  color: var(--gray-500);
+  font-size: .8rem;
+  font-weight: 700;
+}
+
 .modal-backdrop {
   position: fixed;
   z-index: 100;
@@ -1945,5 +1964,11 @@ tr.is-shared-capacity:hover {
   .participant-details,
   .kits-summary__grid {
     grid-template-columns: 1fr;
+  }
+
+  .pagination {
+    align-items: stretch;
+    flex-direction: column;
+    text-align: center;
   }
 }

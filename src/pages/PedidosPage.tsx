@@ -1,9 +1,9 @@
 import { Eye, Filter, RefreshCw, Search, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { HeaderContext } from '../components/AppShell'
 import { DashboardSkeleton, EmptyState, ErrorState } from '../components/States'
-import { useInscricoes } from '../hooks/useInscricoes'
+import { usePedidosPage } from '../hooks/useInscricoes'
 import type { DashboardFilters, Inscricao } from '../types/dashboard'
 import { getDateRange } from '../utils/dates'
 import { formatCurrency, formatInteger } from '../utils/formatters'
@@ -88,26 +88,44 @@ export function PedidosPage() {
   const [filterTeam, setFilterTeam] = useState('')
   const [shirtSize, setShirtSize] = useState('')
   const [registrationSearch, setRegistrationSearch] = useState('')
+  const [status, setStatus] = useState<DashboardFilters['status']>('')
+  const [limit, setLimit] = useState(20)
   const [selected, setSelected] = useState<Inscricao | null>(null)
-  const [filters, setFilters] = useState<DashboardFilters>({ nomeEvento: '', ...initialRange })
-  const { data: inscricoes = [], isLoading, error, refetch } = useInscricoes(filters)
+  const [filters, setFilters] = useState<DashboardFilters>({
+    nomeEvento: '',
+    ...initialRange,
+    pagina: 1,
+    limite: 20,
+  })
+  const { data, isLoading, isFetching, error, refetch } = usePedidosPage(filters)
+  const inscricoes = data?.inscricoes ?? []
 
   useEffect(() => {
-    setHeaderContext({ updatedAt: new Date().toISOString(), isFetching: isLoading })
+    setHeaderContext({ updatedAt: new Date().toISOString(), isFetching })
     return () => setHeaderContext({})
-  }, [setHeaderContext, isLoading])
+  }, [setHeaderContext, isFetching])
 
-  const filteredInscricoes = useMemo(() => inscricoes.filter((inscricao) => {
-    const query = searchTerm.trim().toLocaleLowerCase('pt-BR')
-    const registration = registrationSearch.trim().toLocaleLowerCase('pt-BR')
-    return (!query || [inscricao.nome, inscricao.email].some((value) => value?.toLocaleLowerCase('pt-BR').includes(query)))
-      && (!filterTeam || formatTeam(inscricao).toLocaleLowerCase('pt-BR').includes(filterTeam.toLocaleLowerCase('pt-BR')))
-      && (!shirtSize || formatShirtSize(inscricao) === shirtSize)
-      && (!registration || formatRegistrationNumber(inscricao).toLocaleLowerCase('pt-BR').includes(registration))
-  }), [filterTeam, inscricoes, registrationSearch, searchTerm, shirtSize])
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setFilters((current) => ({
+        ...current,
+        busca: searchTerm.trim(),
+        pagina: 1,
+      }))
+    }, 400)
+    return () => window.clearTimeout(timeout)
+  }, [searchTerm])
 
   function applyFilters() {
-    setFilters((current) => ({ ...current, equipe: filterTeam, numeroCamisa: shirtSize, numeroInscricao: registrationSearch }))
+    setFilters((current) => ({
+      ...current,
+      equipe: filterTeam.trim(),
+      numeroCamisa: shirtSize,
+      numeroInscricao: registrationSearch.trim(),
+      status,
+      limite: limit,
+      pagina: 1,
+    }))
   }
 
   return (
@@ -119,25 +137,32 @@ export function PedidosPage() {
         <div className="field"><label htmlFor="team-filter">Equipe</label><input id="team-filter" placeholder="Nome da equipe..." value={filterTeam} onChange={(e) => setFilterTeam(e.target.value)} /></div>
         <div className="field"><label htmlFor="shirt-filter">Tamanho da camisa</label><select id="shirt-filter" value={shirtSize} onChange={(e) => setShirtSize(e.target.value)}><option value="">Todos</option>{SHIRT_SIZES.map((size) => <option key={size}>{size}</option>)}</select></div>
         <div className="field"><label htmlFor="registration-filter">Nº inscrição</label><input id="registration-filter" inputMode="numeric" placeholder="Ex.: 0025" value={registrationSearch} onChange={(e) => setRegistrationSearch(e.target.value)} /></div>
+        <div className="field"><label htmlFor="status-filter">Status</label><select id="status-filter" value={status} onChange={(e) => setStatus(e.target.value as DashboardFilters['status'])}><option value="">Todos</option><option value="PENDENTE">Pendente</option><option value="APROVADO">Aprovado</option><option value="REJEITADO">Rejeitado</option><option value="CANCELADO">Cancelado</option></select></div>
+        <div className="field field--limit"><label htmlFor="limit-filter">Por página</label><select id="limit-filter" value={limit} onChange={(e) => setLimit(Number(e.target.value))}><option value={20}>20</option><option value={50}>50</option><option value={100}>100</option></select></div>
         <button className="button button--primary" type="button" onClick={applyFilters} disabled={isLoading}><Filter size={17} />Filtrar</button>
-        <button className="button button--secondary" type="button" aria-label="Atualizar pedidos" onClick={() => void refetch()} disabled={isLoading}><RefreshCw size={17} className={isLoading ? 'spin' : ''} /></button>
+        <button className="button button--secondary" type="button" aria-label="Atualizar pedidos" onClick={() => void refetch()} disabled={isFetching}><RefreshCw size={17} className={isFetching ? 'spin' : ''} /></button>
       </section>
 
       {error && <ErrorState message={error instanceof Error ? error.message : 'Falha ao carregar pedidos.'} onRetry={() => void refetch()} />}
-      {isLoading ? <DashboardSkeleton /> : filteredInscricoes.length === 0 ? (
+      {isLoading ? <DashboardSkeleton /> : inscricoes.length === 0 ? (
         <div className="panel"><EmptyState title="Nenhum pedido encontrado" description="Tente alterar os filtros ou a pesquisa." /></div>
       ) : (
         <section className="panel">
-          <div className="panel__header"><h2>Pedidos ({formatInteger(filteredInscricoes.length)})</h2></div>
+          <div className="panel__header"><div><h2>Pedidos ({formatInteger(data?.total ?? 0)})</h2><p>Página {data?.pagina ?? 1} de {data?.totalPaginas ?? 1}</p></div></div>
           <div className="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Evento</th><th>Kit/lote</th><th>Equipe</th><th>Tamanho da camisa</th><th>Nº inscrição</th><th>Status</th><th>Data</th><th aria-label="Ações" /></tr></thead>
-            <tbody>{filteredInscricoes.map((inscricao) => <tr key={inscricao.id}>
-              <td data-label="Nome"><strong>{inscricao.nome}</strong></td><td data-label="E-mail">{inscricao.email}</td><td data-label="Evento">{inscricao.nomeEvento}</td><td data-label="Kit/lote">{inscricao.lote}</td>
-              <td data-label="Equipe"><span className={`team-badge ${formatTeam(inscricao) === 'Sem equipe' || formatTeam(inscricao) === 'Sem dados' ? 'team-badge--empty' : ''}`}>{formatTeam(inscricao)}</span></td>
-              <td data-label="Tamanho da camisa">{formatShirtSize(inscricao)}</td><td data-label="Nº inscrição"><span className="registration-number">{formatRegistrationNumber(inscricao)}</span></td>
-              <td data-label="Status"><span className={`status-badge status-badge--${inscricao.status}`}>{inscricao.status}</span></td><td data-label="Data">{new Date(inscricao.criadoEm).toLocaleDateString('pt-BR')}</td>
-              <td data-label="Detalhes"><button className="icon-button" type="button" aria-label={`Ver pedido de ${inscricao.nome}`} onClick={() => setSelected(inscricao)}><Eye size={18} /></button></td>
+            <tbody>{inscricoes.map((inscricao) => <tr key={inscricao.id}>
+              <td data-label="Nome"><strong>{inscricao.nome || '—'}</strong></td><td data-label="E-mail">{inscricao.email || '—'}</td><td data-label="Evento">{inscricao.nomeEvento || '—'}</td><td data-label="Kit/lote">{inscricao.lote || '—'}</td>
+              <td data-label="Equipe"><span className={`team-badge ${!inscricao.equipe ? 'team-badge--empty' : ''}`}>{inscricao.equipe || '—'}</span></td>
+              <td data-label="Tamanho da camisa">{inscricao.numeroCamisa || '—'}</td><td data-label="Nº inscrição"><span className="registration-number">{inscricao.numeroInscricao ? formatRegistrationNumber(inscricao) : '—'}</span></td>
+              <td data-label="Status"><span className={`status-badge status-badge--${inscricao.status}`}>{inscricao.status || '—'}</span></td><td data-label="Data">{inscricao.criadoEm ? new Date(inscricao.criadoEm).toLocaleDateString('pt-BR') : '—'}</td>
+              <td data-label="Detalhes"><button className="icon-button" type="button" aria-label={`Ver pedido de ${inscricao.nome || 'participante'}`} onClick={() => setSelected(inscricao)}><Eye size={18} /></button></td>
             </tr>)}</tbody>
           </table></div>
+          <div className="pagination">
+            <button className="button button--secondary" type="button" disabled={isFetching || (data?.pagina ?? 1) <= 1} onClick={() => setFilters((current) => ({ ...current, pagina: Math.max(1, (current.pagina ?? 1) - 1) }))}>Página anterior</button>
+            <span>{formatInteger(data?.total ?? 0)} registro{data?.total === 1 ? '' : 's'}</span>
+            <button className="button button--secondary" type="button" disabled={isFetching || (data?.pagina ?? 1) >= (data?.totalPaginas ?? 1)} onClick={() => setFilters((current) => ({ ...current, pagina: (current.pagina ?? 1) + 1 }))}>Próxima página</button>
+          </div>
         </section>
       )}
       {selected && <ParticipantDetail inscricao={selected} onClose={() => setSelected(null)} />}

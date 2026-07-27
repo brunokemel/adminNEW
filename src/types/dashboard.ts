@@ -55,12 +55,6 @@ export interface DashboardResponse {
   lotes: DashboardLotMetrics[]
 }
 
-export interface DashboardFilters {
-  nomeEvento: string
-  dataInicio: string
-  dataFim: string
-}
-
 export interface SessionResponse {
   authenticated: boolean
   expiresAt?: string
@@ -89,7 +83,10 @@ export interface Inscricao {
 }
 
 export interface InscricoesResponse {
+  pagina: number
+  limite: number
   total: number
+  totalPaginas: number
   inscricoes: Inscricao[]
 }
 
@@ -135,4 +132,9 @@ export interface DashboardFilters {
   equipe?: string
   numeroCamisa?: string
   numeroInscricao?: string
+  status?: 'PENDENTE' | 'APROVADO' | 'REJEITADO' | 'CANCELADO' | ''
+  lote?: string
+  busca?: string
+  pagina?: number
+  limite?: number
 }

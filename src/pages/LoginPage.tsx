@@ -3,6 +3,7 @@ import { type FormEvent, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/http'
 import { Brand } from '../components/Brand'
+import { FullPageLoader } from '../components/States'
 import { useAdminLogin, useAdminSession } from '../hooks/useAuth'
 
 export function LoginPage() {
@@ -12,6 +13,10 @@ export function LoginPage() {
   const location = useLocation()
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+
+  if (session.isLoading) {
+    return <FullPageLoader label="Verificando sessão administrativa..." />
+  }
 
   if (session.data?.authenticated) {
     return <Navigate to="/" replace />

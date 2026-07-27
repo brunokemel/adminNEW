@@ -15,11 +15,14 @@ export class ApiError extends Error {
   }
 }
 
-function buildUrl(path: string, query?: Record<string, string | undefined>) {
+function buildUrl(
+  path: string,
+  query?: Record<string, string | number | boolean | undefined>,
+) {
   const url = new URL(`${apiUrl}${path}`)
 
   Object.entries(query ?? {}).forEach(([key, value]) => {
-    if (value) url.searchParams.set(key, value)
+    if (value !== undefined && value !== '') url.searchParams.set(key, String(value))
   })
 
   return url.toString()
@@ -28,7 +31,7 @@ function buildUrl(path: string, query?: Record<string, string | undefined>) {
 export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
-  query?: Record<string, string | undefined>,
+  query?: Record<string, string | number | boolean | undefined>,
 ): Promise<T> {
   const response = await fetch(buildUrl(path, query), {
     ...options,
@@ -52,6 +55,9 @@ export async function apiFetch<T>(
         ? String('message' in payload ? payload.message : payload.erro)
         : `Não foi possível concluir a solicitação (${response.status}).`
 
+    if (response.status === 401 && path !== '/admin/auth/login') {
+      window.dispatchEvent(new CustomEvent('admin:unauthorized'))
+    }
     throw new ApiError(message, response.status, payload)
   }
 
