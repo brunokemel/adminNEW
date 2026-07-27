@@ -1,4 +1,7 @@
-const apiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '')
+const configuredApiUrl = import.meta.env.VITE_API_URL?.replace(/\/$/, '')
+const apiUrl = import.meta.env.PROD
+  ? `${window.location.origin}/api`
+  : configuredApiUrl
 
 if (!apiUrl) {
   throw new Error('VITE_API_URL não foi configurada. Copie .env.example para .env.')
