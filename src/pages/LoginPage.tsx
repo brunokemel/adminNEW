@@ -1,4 +1,4 @@
-import { LockKeyhole, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { ApiError } from '../api/http'
@@ -12,6 +12,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
 
   if (session.isLoading) {
@@ -72,13 +73,23 @@ export function LoginPage() {
             <LockKeyhole size={19} />
             <input
               id="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="Digite sua senha"
               autoFocus
             />
+            <button
+              type="button"
+              className="password-visibility"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+              aria-pressed={showPassword}
+              title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+            >
+              {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+            </button>
           </div>
 
           {error && <p className="form-error" role="alert">{error}</p>}

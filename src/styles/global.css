@@ -941,6 +941,30 @@ td small {
   background: transparent;
 }
 
+.password-visibility {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  padding: 0;
+  background: transparent;
+  color: var(--gray-500);
+  cursor: pointer;
+}
+
+.password-visibility:hover {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+.password-visibility:focus-visible {
+  outline: 2px solid var(--green-500);
+  outline-offset: 1px;
+}
+
 .refund-list {
   display: grid;
   gap: 12px;
