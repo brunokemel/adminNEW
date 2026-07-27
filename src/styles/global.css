@@ -2057,3 +2057,310 @@ tr.is-shared-capacity:hover {
     flex-direction: column;
   }
 }
+
+/* === RESPONSIVE LAYOUT REFINEMENTS === */
+
+@media (max-width: 1024px) {
+  .page-container {
+    width: min(100% - 32px, 1440px);
+    padding: 30px 0 48px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-panel > .field,
+  .field--event,
+  .field--period {
+    width: auto;
+    min-width: 0;
+  }
+
+  .filter-panel__submit {
+    align-self: end;
+  }
+
+  .orders-filters .button {
+    align-self: end;
+  }
+
+  .quick-actions__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-actions__grid .action-card:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 760px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  .topbar__inner {
+    min-height: 68px;
+    gap: 12px;
+    padding: 0 14px;
+  }
+
+  .topbar__status {
+    justify-self: end;
+  }
+
+  .topbar__status span {
+    display: none;
+  }
+
+  .topbar__nav {
+    top: calc(100% + 6px);
+    right: 12px;
+    left: 12px;
+    min-width: 0;
+  }
+
+  .topbar__nav > a,
+  .topbar__nav .button {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .page-container {
+    width: min(100% - 24px, 1440px);
+    padding: 22px 0 40px;
+  }
+
+  .page-heading {
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .page-heading h1 {
+    font-size: clamp(1.7rem, 8vw, 2.15rem);
+  }
+
+  .page-heading p {
+    margin-bottom: 0;
+  }
+
+  .live-indicator {
+    padding: 7px 10px;
+  }
+
+  .filter-panel {
+    display: flex;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .filter-panel .button {
+    width: 100%;
+  }
+
+  .orders-filters .field--limit {
+    width: 100%;
+  }
+
+  .metric-card {
+    min-height: 136px;
+    padding: 16px;
+  }
+
+  .metric-card__value {
+    font-size: clamp(1.3rem, 6vw, 1.7rem);
+  }
+
+  .quick-actions__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-actions__grid .action-card:last-child {
+    grid-column: auto;
+  }
+
+  .panel,
+  .shared-capacity-card,
+  .teams-card {
+    border-radius: 13px;
+  }
+
+  .panel__header,
+  .event-form,
+  .individual-report,
+  .kits-summary__grid {
+    padding: 16px;
+  }
+
+  td {
+    min-width: 0;
+  }
+
+  td::before {
+    flex: 0 0 38%;
+  }
+
+  td > * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .lot-cell,
+  .capacity-cell {
+    align-items: flex-end;
+  }
+
+  .participant-modal {
+    max-height: calc(100dvh - 24px);
+    border-radius: 14px;
+    padding: 18px;
+  }
+
+  .participant-details dd {
+    overflow-wrap: anywhere;
+  }
+
+  .modal-backdrop {
+    padding: 12px;
+  }
+
+  .preview-tabs {
+    overflow-x: auto;
+    padding: 0 12px;
+  }
+
+  .preview-tabs button {
+    flex: 1 0 auto;
+    justify-content: center;
+    padding-inline: 10px;
+  }
+
+  .pdf-preview-frame {
+    height: 65dvh;
+    min-height: 380px;
+  }
+}
+
+@media (max-width: 540px) {
+  .brand {
+    gap: 8px;
+  }
+
+  .brand__mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .brand__text strong {
+    font-size: .94rem;
+  }
+
+  .brand__text small {
+    font-size: .61rem;
+  }
+
+  .page-container {
+    width: min(100% - 20px, 1440px);
+  }
+
+  .metrics-grid {
+    gap: 10px;
+  }
+
+  .segmented-control button {
+    padding: 0 7px;
+    font-size: .74rem;
+  }
+
+  .action-card {
+    min-height: 92px;
+    padding: 15px;
+  }
+
+  .refund-list {
+    padding: 12px;
+  }
+
+  .refund-card {
+    padding: 14px;
+  }
+
+  .refund-card__title {
+    gap: 8px;
+  }
+
+  .price-row {
+    max-width: none;
+  }
+
+  .shared-capacity-card {
+    padding: 16px;
+  }
+
+  .shared-capacity-card__metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .kit-item {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  tbody {
+    padding: 8px;
+  }
+
+  tbody tr {
+    padding: 8px;
+  }
+
+  td {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  td::before {
+    flex-basis: 34%;
+  }
+
+  .occupancy {
+    min-width: 0;
+  }
+
+  .occupancy__track {
+    width: 58px;
+  }
+
+  .content-state {
+    padding: 22px 16px;
+  }
+
+  .pdf-explainer {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 380px) {
+  .brand__text small {
+    display: none;
+  }
+
+  .metrics-grid,
+  .shared-capacity-card__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .segmented-control {
+    grid-template-columns: 1fr;
+  }
+
+  .login-card {
+    padding: 18px;
+  }
+}
