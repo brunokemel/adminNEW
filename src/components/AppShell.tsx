@@ -76,7 +76,7 @@ export function AppShell() {
               className={({ isActive }) => (isActive ? 'active' : undefined)}
               onClick={() => setMenuOpen(false)}
             >
-              Novo lote
+              Eventos e lotes
             </NavLink>
             <button
               className="button button--ghost"

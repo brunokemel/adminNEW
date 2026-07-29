@@ -4,11 +4,15 @@ import type {
   DashboardResponse,
   EventoEquipasResponse,
   InscricoesResponse,
-  NewEventLotPayload,
   RefundRequest,
   ReportParticipant,
   SessionResponse,
 } from '../types/dashboard'
+import type {
+  CadastroEventoLotes,
+  RespostaCadastroLotes,
+  StatusLote,
+} from '../types/events'
 import { apiFetch, downloadProtectedFile, getProtectedFile } from './http'
 
 const unwrap = <T>(payload: unknown, keys: string[]): T => {
@@ -50,11 +54,18 @@ export const adminApi = {
   getPendingRefunds: () =>
     apiFetch<RefundRequest[]>('/reembolsos/solicitacoes', {}, { status: 'PENDENTE' }),
 
-  createEventLot: (payload: NewEventLotPayload) =>
-    apiFetch<{ success?: boolean; message?: string }>('/admin/eventos/lotes', {
+  createEventLot: (payload: CadastroEventoLotes) =>
+    apiFetch<RespostaCadastroLotes>('/admin/eventos/lotes', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+
+  getLotStatus: (nomeEvento?: string) =>
+    apiFetch<{ lotes: StatusLote[] }>(
+      '/lotes/status',
+      {},
+      nomeEvento ? { nomeEvento } : undefined,
+    ),
 
   downloadEventReport: (eventName: string) =>
     downloadProtectedFile(
