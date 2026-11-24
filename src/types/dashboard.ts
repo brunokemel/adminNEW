@@ -51,6 +51,10 @@ export interface DashboardLotMetrics {
 
 export interface DashboardResponse {
   atualizadoEm: string
+  distanciasSelecionadas: Array<{
+    nomeEvento: string
+    distancia: string
+  }>
   resumo: DashboardSummaryMetrics
   lotes: DashboardLotMetrics[]
 }
