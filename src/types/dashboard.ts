@@ -140,6 +140,9 @@ export interface Coupon {
   desconto: number
   ativo: boolean
   criadoEm: string
+  limiteUsos?: number | null
+  usos?: number
+  validadeAte?: string | null
 }
 
 export interface CouponPayload {
@@ -147,6 +150,8 @@ export interface CouponPayload {
   nomeEvento: string
   desconto: number
   id?: string
+  limiteUsos?: number | null
+  validadeAte?: string | null
 }
 
 export interface DashboardFilters {
