@@ -51,6 +51,10 @@ export interface DashboardLotMetrics {
 
 export interface DashboardResponse {
   atualizadoEm: string
+  distanciasSelecionadas: Array<{
+    nomeEvento: string
+    distancia: string
+  }>
   resumo: DashboardSummaryMetrics
   lotes: DashboardLotMetrics[]
 }
@@ -95,6 +99,7 @@ export interface ReportParticipant {
   nome: string
   cpf: string
   lote: string
+  distancia?: string | null
   numeroInscricao?: number | null
 }
 

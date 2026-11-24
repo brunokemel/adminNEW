@@ -107,7 +107,7 @@ export function EventPreview({ filters, onDownload }: EventPreviewProps) {
                     <div className="individual-report__item" key={participant.id}>
                       <div>
                         <strong>{participant.nome}</strong>
-                        <span>CPF {participant.cpf} · {participant.lote}{participant.numeroInscricao ? ` · Nº ${participant.numeroInscricao}` : ''}</span>
+                        <span>CPF {participant.cpf} · {participant.lote} · {participant.distancia?.trim() || 'Distância não informada'}{participant.numeroInscricao ? ` · Nº ${participant.numeroInscricao}` : ''}</span>
                       </div>
                       <button className="button button--secondary" type="button" onClick={() => void downloadIndividual(participant.id, participant.nome)}>
                         <Download size={16} /> PDF do kit
@@ -151,12 +151,13 @@ export function EventPreview({ filters, onDownload }: EventPreviewProps) {
           ) : (
             <div className="table-wrap">
               <table>
-                <thead><tr><th>Nome</th><th>E-mail</th><th>Kit/lote</th><th>Camisa</th><th>Status</th></tr></thead>
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Kit/lote</th><th>Distância</th><th>Camisa</th><th>Status</th></tr></thead>
                 <tbody>{registrations.map((item) => (
                   <tr key={item.id}>
                     <td data-label="Nome"><strong>{item.nome || 'Não informado'}</strong></td>
                     <td data-label="E-mail">{item.email || 'Não informado'}</td>
                     <td data-label="Kit/lote">{item.lote || 'Não informado'}</td>
+                    <td data-label="Distância">{item.distancia?.trim() || 'Não informada'}</td>
                     <td data-label="Camisa">{formatShirtSize(item)}</td>
                     <td data-label="Status">{item.status || 'Não informado'}</td>
                   </tr>
