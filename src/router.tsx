@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { AppShell } from './components/AppShell'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { DashboardPage } from './pages/DashboardPage'
+import { CouponsPage } from './pages/CouponsPage'
 import { LoginPage } from './pages/LoginPage'
 import { NewEventPage } from './pages/NewEventPage'
 import { NotFoundPage } from './pages/NotFoundPage'
@@ -23,6 +24,7 @@ export const router = createBrowserRouter([
           { path: '/pedidos', element: <PedidosPage /> },
           { path: '/reembolsos', element: <RefundsPage /> },
           { path: '/novo-evento', element: <NewEventPage /> },
+          { path: '/cupons', element: <CouponsPage /> },
         ],
       },
     ],

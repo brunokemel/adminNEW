@@ -1,5 +1,7 @@
 import type {
   AdminEvent,
+  Coupon,
+  CouponPayload,
   DashboardFilters,
   DashboardResponse,
   EventoEquipasResponse,
@@ -133,4 +135,20 @@ export const adminApi = {
 
   getEventoEquipas: (nomeEvento: string) =>
     apiFetch<EventoEquipasResponse>(`/admin/eventos/${encodeURIComponent(nomeEvento)}/equipas`),
+
+  getCouponEvents: () => apiFetch<{ corridas: string[] }>('/admin/cupons/corridas'),
+
+  getCoupons: () => apiFetch<{ cupons: Coupon[] }>('/admin/cupons'),
+
+  saveCoupon: (payload: CouponPayload) =>
+    apiFetch<{ success?: boolean; message?: string }>('/admin/cupons', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  setCouponActive: (id: string, ativo: boolean) =>
+    apiFetch<{ success?: boolean; message?: string }>(`/admin/cupons/${encodeURIComponent(id)}/ativo`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ativo }),
+    }),
 }

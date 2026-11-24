@@ -8,6 +8,7 @@ import {
   RefreshCw,
   RotateCcw,
   TicketCheck,
+  TicketPercent,
   WalletCards,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -344,6 +345,14 @@ export function DashboardPage() {
                 <div>
                   <strong>Cadastrar evento/lote</strong>
                   <small>Adicionar uma nova opção de inscrição</small>
+                </div>
+              </Link>
+
+              <Link className="action-card action-card--coupon" to="/cupons">
+                <span><TicketPercent size={21} /></span>
+                <div>
+                  <strong>Cadastrar cupom</strong>
+                  <small>Definir código, corrida e valor do desconto</small>
                 </div>
               </Link>
             </div>

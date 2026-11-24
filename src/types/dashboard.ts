@@ -133,6 +133,22 @@ export interface NewEventLotPayload {
   ativo: boolean
 }
 
+export interface Coupon {
+  id: string
+  codigo: string
+  nomeEvento: string
+  desconto: number
+  ativo: boolean
+  criadoEm: string
+}
+
+export interface CouponPayload {
+  codigo: string
+  nomeEvento: string
+  desconto: number
+  id?: string
+}
+
 export interface DashboardFilters {
   nomeEvento: string
   dataInicio: string
