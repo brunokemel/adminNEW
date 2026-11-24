@@ -4,12 +4,22 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { adminApi } from '../api/admin'
 import type { Coupon, CouponPayload } from '../types/dashboard'
 
-const emptyForm: CouponPayload = { codigo: '', nomeEvento: '', desconto: 0 }
+type CouponForm = CouponPayload & { validadeLocal: string }
+const emptyForm: CouponForm = { codigo: '', nomeEvento: '', desconto: 0, validadeLocal: '' }
 const money = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+const dateTime = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+
+function toLocalDateTime(value?: string | null) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const offset = date.getTimezoneOffset() * 60_000
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16)
+}
 
 export function CouponsPage() {
   const queryClient = useQueryClient()
-  const [form, setForm] = useState<CouponPayload>(emptyForm)
+  const [form, setForm] = useState<CouponForm>(emptyForm)
   const [editing, setEditing] = useState<Coupon | null>(null)
   const [formError, setFormError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -40,7 +50,15 @@ export function CouponsPage() {
 
   function beginEdit(coupon: Coupon) {
     setEditing(coupon)
-    setForm({ id: coupon.id, codigo: coupon.codigo, nomeEvento: coupon.nomeEvento, desconto: coupon.desconto })
+    setForm({
+      id: coupon.id,
+      codigo: coupon.codigo,
+      nomeEvento: coupon.nomeEvento,
+      desconto: coupon.desconto,
+      limiteUsos: coupon.limiteUsos ?? null,
+      validadeAte: coupon.validadeAte ?? null,
+      validadeLocal: toLocalDateTime(coupon.validadeAte),
+    })
     setFormError('')
     setSuccessMessage('')
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -66,8 +84,24 @@ export function CouponsPage() {
       setFormError('Selecione um evento e informe um desconto maior que zero.')
       return
     }
+    if (form.limiteUsos != null && (!Number.isInteger(form.limiteUsos) || form.limiteUsos < 1)) {
+      setFormError('O máximo de usos deve ser um número inteiro maior que zero.')
+      return
+    }
+    const validadeAte = form.validadeLocal ? new Date(form.validadeLocal) : null
+    if (validadeAte && validadeAte.getTime() <= Date.now()) {
+      setFormError('A data e o horário de validade devem estar no futuro.')
+      return
+    }
     try {
-      await saveMutation.mutateAsync({ ...form, codigo: codigo.toUpperCase(), desconto: Number(form.desconto) })
+      const { validadeLocal: _validadeLocal, ...payload } = form
+      await saveMutation.mutateAsync({
+        ...payload,
+        codigo: codigo.toUpperCase(),
+        desconto: Number(form.desconto),
+        limiteUsos: form.limiteUsos || null,
+        validadeAte: validadeAte?.toISOString() ?? null,
+      })
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Não foi possível salvar o cupom.')
     }
@@ -93,6 +127,16 @@ export function CouponsPage() {
               <label htmlFor="coupon-code">Código do cupom</label>
               <input id="coupon-code" value={form.codigo} onChange={(e) => setForm((c) => ({ ...c, codigo: e.target.value.toUpperCase() }))} placeholder="CORRE10" minLength={3} maxLength={40} required />
               <small>Letras, números, hífen e sublinhado.</small>
+            </div>
+            <div className="field">
+              <label htmlFor="coupon-max-uses">Máximo de usos</label>
+              <input id="coupon-max-uses" type="number" min="1" step="1" value={form.limiteUsos ?? ''} onChange={(e) => setForm((c) => ({ ...c, limiteUsos: e.target.value ? Number(e.target.value) : null }))} placeholder="Ilimitado" />
+              <small>Deixe vazio para não limitar a quantidade.</small>
+            </div>
+            <div className="field">
+              <label htmlFor="coupon-expiry">Válido até</label>
+              <input id="coupon-expiry" type="datetime-local" value={form.validadeLocal} onChange={(e) => setForm((c) => ({ ...c, validadeLocal: e.target.value }))} />
+              <small>Horário local do painel. Deixe vazio para não expirar por data.</small>
             </div>
             <div className="field">
               <label htmlFor="coupon-event">Corrida</label>
@@ -121,13 +165,15 @@ export function CouponsPage() {
       </section>
 
       <section className="panel">
-        <div className="panel__header"><div><h2>Cupons cadastrados</h2><p>Ative ou desative cada código quando precisar.</p></div></div>
+          <div className="panel__header"><div><h2>Cupons cadastrados</h2><p>Ative ou desative cada código quando precisar.</p></div></div>
         {couponsQuery.isLoading ? <div className="content-state">Carregando cupons...</div> : couponsQuery.isError ? <div className="content-state content-state--error">Não foi possível carregar os cupons.</div> : couponsQuery.data?.cupons.length ? (
-          <div className="table-wrap"><table><thead><tr><th>Código</th><th>Corrida</th><th>Desconto</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+          <div className="table-wrap"><table><thead><tr><th>Código</th><th>Corrida</th><th>Desconto</th><th>Usos</th><th>Validade</th><th>Status</th><th>Ações</th></tr></thead><tbody>
             {couponsQuery.data.cupons.map((coupon) => <tr key={coupon.id}>
               <td data-label="Código"><strong className="coupon-code">{coupon.codigo}</strong></td>
               <td data-label="Corrida">{coupon.nomeEvento}</td>
               <td data-label="Desconto">{money.format(coupon.desconto)}</td>
+              <td data-label="Usos">{coupon.usos ?? 0}{coupon.limiteUsos ? ` / ${coupon.limiteUsos}` : ' / ilimitado'}</td>
+              <td data-label="Validade">{coupon.validadeAte ? dateTime.format(new Date(coupon.validadeAte)) : 'Sem validade'}</td>
               <td data-label="Status"><span className={`badge ${coupon.ativo ? '' : 'badge--warning'}`}>{coupon.ativo ? 'Ativo' : 'Inativo'}</span></td>
               <td data-label="Ações"><div className="coupon-actions">
                 <button className="button button--secondary coupon-action" type="button" onClick={() => beginEdit(coupon)}><Pencil size={15} />Editar</button>
