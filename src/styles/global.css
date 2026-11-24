@@ -291,6 +291,9 @@ p {
 }
 
 .topbar__nav > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border-radius: 8px;
   padding: 10px 11px;
   color: rgba(255, 255, 255, 0.68);
@@ -301,6 +304,19 @@ p {
 .topbar__nav > a:hover,
 .topbar__nav > a.active {
   background: rgba(255, 255, 255, 0.07);
+  color: white;
+}
+
+.topbar__nav > a.topbar__coupon-link {
+  border: 1px solid rgba(19, 185, 129, 0.4);
+  background: rgba(19, 185, 129, 0.14);
+  color: #9be9ca;
+}
+
+.topbar__nav > a.topbar__coupon-link:hover,
+.topbar__nav > a.topbar__coupon-link.active {
+  border-color: var(--green-500);
+  background: var(--green-600);
   color: white;
 }
 
@@ -2312,6 +2328,33 @@ tr.is-shared-capacity:hover {
   margin: 4px 0 0;
   color: #176c50;
   font-size: .82rem;
+}
+
+.coupon-code {
+  color: var(--navy-800);
+  letter-spacing: 0.04em;
+}
+
+.coupon-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.coupon-action {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 0.75rem;
+}
+
+.coupon-list-error {
+  margin: 0;
+  padding: 0 20px 16px;
+}
+
+.action-card--coupon > span {
+  background: var(--green-100);
+  color: var(--green-600);
 }
 
 @media (max-width: 760px) {

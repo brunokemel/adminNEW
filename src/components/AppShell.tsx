@@ -1,4 +1,4 @@
-import { CalendarClock, LogOut, Menu, X } from 'lucide-react'
+import { CalendarClock, LogOut, Menu, TicketPercent, X } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAdminLogout } from '../hooks/useAuth'
@@ -77,6 +77,13 @@ export function AppShell() {
               onClick={() => setMenuOpen(false)}
             >
               Eventos e lotes
+            </NavLink>
+            <NavLink
+              to="/cupons"
+              className={({ isActive }) => `topbar__coupon-link${isActive ? ' active' : ''}`}
+              onClick={() => setMenuOpen(false)}
+            >
+              <TicketPercent size={16} /> Cupons
             </NavLink>
             <button
               className="button button--ghost"
