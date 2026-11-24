@@ -95,6 +95,7 @@ export interface ReportParticipant {
   nome: string
   cpf: string
   lote: string
+  distancia?: string | null
   numeroInscricao?: number | null
 }
 
