@@ -1,4 +1,4 @@
-import { Eye, Filter, RefreshCw, Search, X } from 'lucide-react'
+import { Download, Eye, Filter, RefreshCw, Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import type { HeaderContext } from '../components/AppShell'
@@ -21,6 +21,12 @@ interface OutletContext {
 
 const text = (value: unknown, fallback = 'Sem dados') =>
   typeof value === 'string' && value.trim() ? value : fallback
+
+function csvCell(value: unknown) {
+  const raw = value === null || value === undefined ? '' : String(value)
+  const safe = /^[\s]*[=+\-@]/.test(raw) ? `'${raw}` : raw
+  return `"${safe.replaceAll('"', '""')}"`
+}
 
 function ParticipantDetail({ inscricao, onClose }: { inscricao: Inscricao; onClose: () => void }) {
   const contact = hasApiField(inscricao, 'contato')
@@ -128,6 +134,39 @@ export function PedidosPage() {
     }))
   }
 
+  function exportCurrentPage() {
+    const headers = [
+      'Nome', 'E-mail', 'Contato', 'Evento', 'Distância', 'Kit/lote', 'Equipe',
+      'Categoria', 'Tamanho da camisa', 'Nº inscrição', 'Status', 'Status do pagamento',
+      'Total pago', 'Comprovante', 'Data da compra',
+    ]
+    const rows = inscricoes.map((inscricao) => [
+      inscricao.nome,
+      inscricao.email,
+      inscricao.contato ?? inscricao.telefone,
+      inscricao.nomeEvento,
+      inscricao.distancia,
+      inscricao.lote,
+      inscricao.equipe,
+      inscricao.categoria,
+      inscricao.numeroCamisa,
+      inscricao.numeroInscricao,
+      inscricao.status,
+      inscricao.statusPagamento ?? inscricao.status,
+      inscricao.totalPago,
+      inscricao.statusComprovante ?? (inscricao.comprovanteEnviado ? 'Enviado' : ''),
+      inscricao.criadoEm,
+    ])
+    const csv = [headers, ...rows].map((row) => row.map(csvCell).join(';')).join('\r\n')
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `pedidos-pagina-${data?.pagina ?? 1}-${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <>
       <section className="page-heading"><div><p className="eyebrow">Inscrições</p><h1>Gerenciar pedidos</h1><p>Acompanhe inscrições, participantes, equipes e dados dos kits.</p></div></section>
@@ -148,7 +187,7 @@ export function PedidosPage() {
         <div className="panel"><EmptyState title="Nenhum pedido encontrado" description="Tente alterar os filtros ou a pesquisa." /></div>
       ) : (
         <section className="panel">
-          <div className="panel__header"><div><h2>Pedidos ({formatInteger(data?.total ?? 0)})</h2><p>Página {data?.pagina ?? 1} de {data?.totalPaginas ?? 1}</p></div></div>
+          <div className="panel__header"><div><h2>Pedidos ({formatInteger(data?.total ?? 0)})</h2><p>Página {data?.pagina ?? 1} de {data?.totalPaginas ?? 1} · exporta os {inscricoes.length} pedidos desta página</p></div><button className="button button--secondary" type="button" onClick={exportCurrentPage}><Download size={17} />Exportar CSV</button></div>
           <div className="table-wrap"><table><thead><tr><th>Nome</th><th>E-mail</th><th>Evento</th><th>Kit/lote</th><th>Equipe</th><th>Tamanho da camisa</th><th>Nº inscrição</th><th>Status</th><th>Data</th><th aria-label="Ações" /></tr></thead>
             <tbody>{inscricoes.map((inscricao) => <tr key={inscricao.id}>
               <td data-label="Nome"><strong>{inscricao.nome || '—'}</strong></td><td data-label="E-mail">{inscricao.email || '—'}</td><td data-label="Evento">{inscricao.nomeEvento || '—'}</td><td data-label="Kit/lote">{inscricao.lote || '—'}</td>
